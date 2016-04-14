@@ -54,7 +54,7 @@ class SimbaHiveDriver extends HiveDriver {
     out.write(" doNotPrompt=true\n")
     out.write(" principal=" + princ + ";\n")
     out.write("};\n")
-    out.close
+    out.close()
     loginViaJaas(jaasFile)
   }
 }
@@ -168,6 +168,7 @@ object HiveJdbcClientScala {
       case "-k" :: tail => parseOption(opts ++ Map("secure" -> true), tail)
       case "-S" :: tail => parseOption(opts ++ Map("ssl" -> true), tail)
       case Nil => opts
+      case s :: tail => usage(-1, s"Option $s not recognised")
     }
 
     val opts = parseOption(Map[String, Any](), args.toList)

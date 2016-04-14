@@ -11,5 +11,12 @@
 
   <artifactId>example-clients-solr</artifactId>
 
+  <dependencies>
+    <dependency>
+      <groupId>org.apache.solr</groupId>
+      <artifactId>solr-solrj</artifactId>
+      <version>${solr.version}</version>
+    </dependency>
+  </dependencies>
 
 </project>

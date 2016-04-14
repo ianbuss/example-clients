@@ -1,4 +1,4 @@
-package com.cloudera.fce.example.impala.java;
+package com.cloudera.fce.exampleclients.impala.java;
 
 import com.cloudera.fce.exampleclients.common.JdbcClient;
 import com.cloudera.fce.exampleclients.common.JdbcDriver;

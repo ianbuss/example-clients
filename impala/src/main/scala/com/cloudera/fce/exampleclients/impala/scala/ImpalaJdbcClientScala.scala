@@ -3,8 +3,7 @@ package com.cloudera.fce.exampleclients.impala.scala
 import java.io.{BufferedOutputStream, FileOutputStream, PrintWriter}
 import java.sql.{Connection, DriverManager, ResultSet}
 import java.util.UUID
-
-import com.cloudera.fce.example.impala.java.SimbaImpalaDriver
+import com.cloudera.fce.exampleclients.impala.java.SimbaImpalaDriver
 import org.apache.hadoop.security.UserGroupInformation
 
 trait ImpalaDriver {

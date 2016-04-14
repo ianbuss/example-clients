@@ -11,8 +11,8 @@ import uuid
 # Both Hive and Impala can use the HS2 protocol
 from impala.dbapi import connect
 
-DEFAULT_HS2_PORT = 10000
-DEFAULT_HS2_PRINCIPAL = "hive"
+DEFAULT_HS2_PORT = 21050
+DEFAULT_HS2_PRINCIPAL = "impala"
 DEFAULT_HDFS_PORT = 50070
 DEFAULT_USER_PRINC = pwd.getpwuid(os.getuid()).pw_name
 
@@ -45,7 +45,7 @@ def usage(code):
 
 def login_via_keytab(keytab, user):
     os.environ['KRB5CCNAME'] = '/tmp/%s' % uuid.uuid1()
-    code = subprocess.call(['kinit','-k','t',keytab,user])
+    code = subprocess.call(['kinit','-k','-t',keytab,user])
     if code == 0:
         return True
     else:
@@ -105,7 +105,7 @@ if __name__ == "__main__":
     if config['secure']:
         auth_mech = 'GSSAPI'
 
-    if 'keytab' in config and not login_via_keytab(config['keytab']):
+    if 'keytab' in config and not login_via_keytab(config['keytab'], config['user_princ']):
         LOG.error("Could not login with keytab")
         sys.exit(-1)
 
