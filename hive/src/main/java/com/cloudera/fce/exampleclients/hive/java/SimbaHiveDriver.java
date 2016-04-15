@@ -15,15 +15,22 @@ public class SimbaHiveDriver implements JdbcDriver {
   }
 
   @Override
-  public String constructJdbcUrl(String host, int port) {
-    return String.format("jdbc:hive2://%s:%d", host, port);
-  }
-
-  @Override
-  public String constructJdbcUrl(String host, int port, String princ, String realm) {
-    return constructJdbcUrl(host, port) +
-      String.format(";AuthMech=1;KrbRealm=%s;KrbHostFQDN=%s;KrbServiceName=%s",
-        realm, host, princ);
+  public String constructJdbcUrl(String host, int port, String serverPrincipal,
+                                 String kerberosRealm, String sslTrustStore,
+                                 String sslTrustStorePassword) {
+    // Better error detection for production
+    String url = String.format("jdbc:hive2://%s:%d", host, port);
+    if (serverPrincipal == null) {
+      url += ";AuthMech=0";
+    } else {
+      url += String.format(";AuthMech=1;KrbRealm=%s;KrbHostFQDN=%s;KrbServiceName=%s",
+        kerberosRealm, host, serverPrincipal);
+    }
+    if (sslTrustStore != null) {
+      url += String.format(";SSL=1;SSLTrustStore=%s;SSLTrustStorePwd=%s",
+        sslTrustStore, sslTrustStorePassword);
+    }
+    return url;
   }
 
   @Override

@@ -12,15 +12,18 @@ public class ApacheHiveDriver implements JdbcDriver {
   }
 
   @Override
-  public String constructJdbcUrl(String host, int port) {
-    return String.format("jdbc:hive2://%s:%d/default", host, port);
-  }
-
-  @Override
   public String constructJdbcUrl(String host, int port, String serverPrincipal,
-                                 String kerberosRealm) {
-    return constructJdbcUrl(host, port) + String.format(";principal=%s/%s@%s",
-      serverPrincipal, host, kerberosRealm);
+                                 String kerberosRealm, String sslTrustStore,
+                                 String sslTrustStorePassword) {
+    // Better error detection for production
+    String url = String.format("jdbc:hive2://%s:%d/default", host, port);
+    if (serverPrincipal != null) {
+      url += String.format(";principal=%s/%s@%s", serverPrincipal, host, kerberosRealm);
+    }
+    if (sslTrustStore != null) {
+      throw new RuntimeException("SSL not supported on the Apache JDBC driver at this time");
+    }
+    return url;
   }
 
   @Override

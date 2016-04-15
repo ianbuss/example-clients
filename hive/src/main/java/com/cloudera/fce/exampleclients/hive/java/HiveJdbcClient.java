@@ -32,21 +32,16 @@ public class HiveJdbcClient extends JdbcClient {
 
   public void run() throws Exception {
     JdbcDriver driver = loadDriver();
-    String url;
-    boolean secure = Boolean.parseBoolean(properties.getProperty("secure"));
-    if (secure) {
-      url = driver.constructJdbcUrl(
-        properties.getProperty("host"),
-        Integer.parseInt(properties.getProperty("port")),
-        properties.getProperty("serverprinc"),
-        properties.getProperty("realm"));
-    } else {
-      url = driver.constructJdbcUrl(
-        properties.getProperty("host"),
-        Integer.parseInt(properties.getProperty("port")));
-    }
+    String url = driver.constructJdbcUrl(
+      properties.getProperty("host"),
+      Integer.parseInt(properties.getProperty("port")),
+      properties.getProperty("serverprinc", null),
+      properties.getProperty("realm",  null),
+      properties.getProperty("ssltruststore",  null),
+      properties.getProperty("ssltruststorepassword",  null));
 
     // Set up security
+    boolean secure = Boolean.parseBoolean(properties.getProperty("secure"));
     if (secure) {
       // Use JAAS config if specified
       if (null != properties.getProperty("jaas")) {

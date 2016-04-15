@@ -24,21 +24,16 @@ public class ImpalaJdbcClient extends JdbcClient {
 
   public void run() throws Exception {
     JdbcDriver driver = loadDriver();
-    String url;
-    boolean secure = Boolean.parseBoolean(properties.getProperty("secure"));
-    if (secure) {
-      url = driver.constructJdbcUrl(
-        properties.getProperty("host"),
-        Integer.parseInt(properties.getProperty("port")),
-        properties.getProperty("serverprinc"),
-        properties.getProperty("realm"));
-    } else {
-      url = driver.constructJdbcUrl(
-        properties.getProperty("host"),
-        Integer.parseInt(properties.getProperty("port")));
-    }
+    String url = driver.constructJdbcUrl(
+      properties.getProperty("host"),
+      Integer.parseInt(properties.getProperty("port")),
+      properties.getProperty("serverprinc", null),
+      properties.getProperty("realm",  null),
+      properties.getProperty("ssltruststore",  null),
+      properties.getProperty("ssltruststorepassword",  null));
 
     // Set up security
+    boolean secure = Boolean.parseBoolean(properties.getProperty("secure"));
     if (secure) {
       // Use JAAS config if specified
       if (null != properties.getProperty("jaas")) {
@@ -58,7 +53,7 @@ public class ImpalaJdbcClient extends JdbcClient {
 
     try {
       openConnection(url);
-      runQuery(properties.getProperty("query"));
+      runQuery(properties.getProperty("query"), properties.getProperty("db"));
     } finally {
       closeConnection();
       driver.cleanup();
@@ -76,7 +71,8 @@ public class ImpalaJdbcClient extends JdbcClient {
   private static void exitWithUsage(String msg, int exit) {
     System.err.println(msg);
     System.err.printf(
-      "Usage: %s -h HOST -q QUERY [-p PORT] [-s SERVER_PRINC] [-k] [-t KEYTAB] [-u USER_PRINC] [-j JAAS_FILE] [-S]\n",
+      "Usage: %s -h HOST -q QUERY [-p PORT] [-s SERVER_PRINC] [-k] [-t KEYTAB] [-u USER_PRINC] " +
+        "[-j JAAS_FILE] [-St SSL_TRUSTSTORE] [-r REALM] [-Sp SSL_TRUSTSTORE_PASS]\n",
       ImpalaJdbcClient.class.getName());
     System.exit(exit);
   }
@@ -87,6 +83,7 @@ public class ImpalaJdbcClient extends JdbcClient {
     properties.setProperty("port", Integer.toString(DEFAULT_HS2_PORT));
     properties.setProperty("secure", "false");
     properties.setProperty("driver", "APACHE");
+    properties.setProperty("db", "default");
     return properties;
   }
 
@@ -113,8 +110,10 @@ public class ImpalaJdbcClient extends JdbcClient {
         properties.setProperty("query", getNextArg(args, "-q", ++i));
       } else if (arg.equals("-r")) {
         properties.setProperty("realm", getNextArg(args, "-r", ++i));
-      } else if (arg.equals("-S")) {
-        properties.setProperty("ssl", "true");
+      } else if (arg.equals("-St")) {
+        properties.setProperty("ssltruststore", getNextArg(args, "-St", ++i));
+      } else if (arg.equals("-Sp")) {
+        properties.setProperty("ssltruststorepassword", getNextArg(args, "-Sp", ++i));
       }
     }
 

@@ -6,9 +6,8 @@ public interface JdbcDriver {
 
   String getName();
 
-  String constructJdbcUrl(String host, int port);
-
-  String constructJdbcUrl(String host, int port, String serverPrincipal, String kerberosRealm);
+  String constructJdbcUrl(String host, int port, String serverPrincipal, String kerberosRealm,
+                          String sslTrustStore, String sslTrustStorePassword);
 
   void loginViaJaas(String configFile);
 

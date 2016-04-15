@@ -17,10 +17,17 @@ public abstract class JdbcClient {
   }
 
   public void runQuery(String query) throws SQLException {
+    runQuery(query, "db");
+  }
+
+  public void runQuery(String query, String db) throws SQLException {
     if (null == conn) {
       throw new IllegalStateException("No connection open");
     }
     Statement stmt = conn.createStatement();
+
+    // Should use a prepared statement
+    stmt.execute("use " + db);
     try {
       if (stmt.execute(query)) {
         ResultSet resultSet = stmt.getResultSet();

@@ -53,7 +53,7 @@ public class HBaseClient {
 
   public static void main(String[] args) throws Exception {
     if (args.length < 3) {
-      System.err.printf("Usage: %s <conf> <user> <keytab> <table>\n", HBaseClient.class);
+      System.err.printf("Usage: %s <conf> <keytab> <user> <table>\n", HBaseClient.class);
       System.exit(-1);
     }
 
