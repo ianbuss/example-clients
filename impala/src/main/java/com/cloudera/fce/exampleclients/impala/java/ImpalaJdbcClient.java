@@ -71,8 +71,8 @@ public class ImpalaJdbcClient extends JdbcClient {
   private static void exitWithUsage(String msg, int exit) {
     System.err.println(msg);
     System.err.printf(
-      "Usage: %s -h HOST -q QUERY [-p PORT] [-s SERVER_PRINC] [-k] [-t KEYTAB] [-u USER_PRINC] " +
-        "[-j JAAS_FILE] [-St SSL_TRUSTSTORE] [-r REALM] [-Sp SSL_TRUSTSTORE_PASS]\n",
+      "Usage: %s -h HOST -q QUERY [-d DATABASE] [-p PORT] [-s SERVER_PRINC] [-k] [-t KEYTAB] " +
+        "[-u USER_PRINC] [-j JAAS_FILE] [-St SSL_TRUSTSTORE] [-r REALM] [-Sp SSL_TRUSTSTORE_PASS]\n",
       ImpalaJdbcClient.class.getName());
     System.exit(exit);
   }
@@ -114,6 +114,8 @@ public class ImpalaJdbcClient extends JdbcClient {
         properties.setProperty("ssltruststore", getNextArg(args, "-St", ++i));
       } else if (arg.equals("-Sp")) {
         properties.setProperty("ssltruststorepassword", getNextArg(args, "-Sp", ++i));
+      } else if (arg.equals("-d")) {
+        properties.setProperty("db", getNextArg(args, "-d", ++i));
       }
     }
 

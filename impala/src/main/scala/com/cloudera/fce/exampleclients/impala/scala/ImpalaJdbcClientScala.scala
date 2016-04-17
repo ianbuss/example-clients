@@ -147,9 +147,11 @@ object ImpalaJdbcClientScala {
       case "-d" :: optarg :: tail => parseOption(opts ++ Map("driver" -> optarg), tail)
       case "-j" :: optarg :: tail => parseOption(opts ++ Map("jaas" -> optarg), tail)
       case "-r" :: optarg :: tail => parseOption(opts ++ Map("realm" -> optarg), tail)
+      case "-St" :: optarg :: tail => parseOption(opts ++ Map("ssltruststore" -> optarg), tail)
+      case "-Sp" :: optarg :: tail => parseOption(opts ++ Map("ssltruststorepassword" -> optarg), tail)
       case "-k" :: tail => parseOption(opts ++ Map("secure" -> true), tail)
-      case "-S" :: tail => parseOption(opts ++ Map("ssl" -> true), tail)
       case Nil => opts
+      case _ => usage(-1, s"${args.head} not a recognised option")
     }
 
     val opts = parseOption(Map[String, Any](), args.toList)

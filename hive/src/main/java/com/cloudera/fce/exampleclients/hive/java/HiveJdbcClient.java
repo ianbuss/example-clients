@@ -18,13 +18,11 @@ public class HiveJdbcClient extends JdbcClient {
 
   public JdbcDriver loadDriver() throws ClassNotFoundException {
     String driverName = properties.getProperty("driver");
-    JdbcDriver driver = null;
-    if (driverName.toUpperCase().equals("APACHE")) {
-      driver = new ApacheHiveDriver();
-    } else if (driverName.toUpperCase().equals("SIMBA")) {
-      driver = new SimbaHiveDriver();
-    } else {
-      exitWithUsage("Unrecognised driver: " + driverName, -1);
+    JdbcDriver driver = new ApacheHiveDriver();
+    switch(driverName.toUpperCase()) {
+      case "APACHE": break;
+      case "SIMBA": driver = new SimbaHiveDriver(); break;
+      default: exitWithUsage("Unrecognised driver: " + driverName, -1);
     }
     Class.forName(driver.getName());
     return driver;
@@ -61,7 +59,7 @@ public class HiveJdbcClient extends JdbcClient {
 
     try {
       openConnection(url);
-      runQuery(properties.getProperty("query"));
+      runQuery(properties.getProperty("query"), properties.getProperty("db"));
     } finally {
       closeConnection();
       driver.cleanup();
@@ -79,7 +77,9 @@ public class HiveJdbcClient extends JdbcClient {
   private static void exitWithUsage(String msg, int exit) {
     System.err.println(msg);
     System.err.printf(
-      "Usage: %s -h HOST -q QUERY [-p PORT] [-s SERVER_PRINC] [-k] [-t KEYTAB] [-u USER_PRINC] [-d {APACHE|SIMBA}] [-j JAAS_FILE]\n",
+      "Usage: %s -h HOST -q QUERY [-db DATABASE] [-p PORT] [-s SERVER_PRINC] [-k] [-t KEYTAB] " +
+        "[-u USER_PRINC] [-d {APACHE|SIMBA}] [-r REALM] [-j JAAS_FILE] [-St SSL_TRUSTSTORE] " +
+        "[-Sp SSL_TRUSTSTORE_PASSWORD]\n",
       HiveJdbcClient.class.getName());
     System.exit(exit);
   }
@@ -90,6 +90,7 @@ public class HiveJdbcClient extends JdbcClient {
     properties.setProperty("port", Integer.toString(DEFAULT_HS2_PORT));
     properties.setProperty("secure", "false");
     properties.setProperty("driver", "APACHE");
+    properties.setProperty("driver", "default");
     return properties;
   }
 
@@ -98,28 +99,35 @@ public class HiveJdbcClient extends JdbcClient {
 
     for (int i = 0; i < args.length; ++i) {
       String arg = args[i];
-      if (arg.equals("-h")) {
-        properties.setProperty("host", getNextArg(args, "-h", ++i));
-      } else if (arg.equals("-s")) {
-        properties.setProperty("serverprinc", getNextArg(args, "-s", ++i));
-      } else if (arg.equals("-p")) {
-        properties.setProperty("port", getNextArg(args, "-p", ++i));
-      } else if (arg.equals("-k")) {
-        properties.setProperty("secure", "true");
-      } else if (arg.equals("-t")) {
-        properties.setProperty("keytab", getNextArg(args, "-t", ++i));
-      } else if (arg.equals("-u")) {
-        properties.setProperty("userprinc", getNextArg(args, "-u", ++i));
-      } else if (arg.equals("-d")) {
-        properties.setProperty("driver", getNextArg(args, "-d", ++i));
-      } else if (arg.equals("-j")) {
-        properties.setProperty("jaas", getNextArg(args, "-j", ++i));
-      } else if (arg.equals("-q")) {
-        properties.setProperty("query", getNextArg(args, "-q", ++i));
-      } else if (arg.equals("-r")) {
-        properties.setProperty("realm", getNextArg(args, "-r", ++i));
-      } else if (arg.equals("-S")) {
-        properties.setProperty("ssl", "true");
+      switch (arg) {
+        case "-h":
+          properties.setProperty("host", getNextArg(args, "-h", ++i)); break;
+        case "-s":
+          properties.setProperty("serverprinc", getNextArg(args, "-s", ++i)); break;
+        case "-p":
+          properties.setProperty("port", getNextArg(args, "-p", ++i)); break;
+        case "-k":
+          properties.setProperty("secure", "true"); break;
+        case "-t":
+          properties.setProperty("keytab", getNextArg(args, "-t", ++i)); break;
+        case "-u":
+          properties.setProperty("userprinc", getNextArg(args, "-u", ++i)); break;
+        case "-d":
+          properties.setProperty("driver", getNextArg(args, "-d", ++i)); break;
+        case "-j":
+          properties.setProperty("jaas", getNextArg(args, "-j", ++i)); break;
+        case "-q":
+          properties.setProperty("query", getNextArg(args, "-q", ++i)); break;
+        case "-r":
+          properties.setProperty("realm", getNextArg(args, "-r", ++i)); break;
+        case "-St":
+          properties.setProperty("ssltruststore", getNextArg(args, "-St", ++i)); break;
+        case "-Sp":
+          properties.setProperty("ssltruststorepassword", getNextArg(args, "-Sp", ++i)); break;
+        case "-db":
+          properties.setProperty("db", getNextArg(args, "-db", ++i)); break;
+        default:
+          exitWithUsage("Unrecognised option: " + arg, -1);
       }
     }
 

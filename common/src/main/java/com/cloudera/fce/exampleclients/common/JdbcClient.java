@@ -16,10 +16,21 @@ public abstract class JdbcClient {
     }
   }
 
+  /**
+   * Simple method to run a single query against Hive. Uses "default" database.
+   * @param query
+   * @throws SQLException
+   */
   public void runQuery(String query) throws SQLException {
     runQuery(query, "db");
   }
 
+  /**
+   * Simple method to run a single query against a specific Hive database
+   * @param query
+   * @param db
+   * @throws SQLException
+   */
   public void runQuery(String query, String db) throws SQLException {
     if (null == conn) {
       throw new IllegalStateException("No connection open");
@@ -33,10 +44,6 @@ public abstract class JdbcClient {
         ResultSet resultSet = stmt.getResultSet();
         ResultSetMetaData metadata = resultSet.getMetaData();
         int cols = metadata.getColumnCount();
-        int[] types = new int[cols];
-        for (int c = 0; c < cols; ++c) {
-          types[c] = metadata.getColumnType(c + 1);
-        }
         while (resultSet.next()) {
           for (int c = 1; c <= cols; ++c) {
             System.out.print(resultSet.getObject(c).toString());
