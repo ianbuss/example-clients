@@ -17,7 +17,7 @@ public abstract class JdbcClient {
   }
 
   /**
-   * Simple method to run a single query against Hive. Uses "default" database.
+   * Simple method to run a single query via JDBC. Uses "default" database.
    * @param query
    * @throws SQLException
    */
@@ -26,7 +26,7 @@ public abstract class JdbcClient {
   }
 
   /**
-   * Simple method to run a single query against a specific Hive database
+   * Simple method to run a single query against a specific database
    * @param query
    * @param db
    * @throws SQLException
