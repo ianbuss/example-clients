@@ -2,6 +2,10 @@ package com.cloudera.fce.exampleclients.impala.java;
 
 import com.cloudera.fce.exampleclients.common.JdbcClient;
 import com.cloudera.fce.exampleclients.common.JdbcDriver;
+import org.apache.log4j.ConsoleAppender;
+import org.apache.log4j.Level;
+import org.apache.log4j.Logger;
+import org.apache.log4j.PatternLayout;
 
 import java.util.Properties;
 
@@ -28,9 +32,11 @@ public class ImpalaJdbcClient extends JdbcClient {
       properties.getProperty("host"),
       Integer.parseInt(properties.getProperty("port")),
       properties.getProperty("serverprinc", null),
-      properties.getProperty("realm",  null),
-      properties.getProperty("ssltruststore",  null),
-      properties.getProperty("ssltruststorepassword",  null));
+      properties.getProperty("realm", null),
+      properties.getProperty("username", null),
+      properties.getProperty("password", null),
+      properties.getProperty("ssltruststore", null),
+      properties.getProperty("ssltruststorepassword", null));
 
     // Set up security
     boolean secure = Boolean.parseBoolean(properties.getProperty("secure"));
@@ -70,10 +76,17 @@ public class ImpalaJdbcClient extends JdbcClient {
 
   private static void exitWithUsage(String msg, int exit) {
     System.err.println(msg);
-    System.err.printf(
-      "Usage: %s -h HOST -q QUERY [-d DATABASE] [-p PORT] [-s SERVER_PRINC] [-k] [-t KEYTAB] " +
-        "[-u USER_PRINC] [-j JAAS_FILE] [-St SSL_TRUSTSTORE] [-r REALM] [-Sp SSL_TRUSTSTORE_PASS]\n",
-      ImpalaJdbcClient.class.getName());
+    StringBuilder sb = new StringBuilder();
+    sb.append("Usage:" + ImpalaJdbcClient.class.getName() + "\n");
+    sb.append("\t-h HOST\n");
+    sb.append("\t-q QUERY\n");
+    sb.append("\t[-d DATABASE] [-p PORT]\n");
+    sb.append("\t[-s SERVER_PRINC] [-k] [-t KEYTAB] [-u USER_PRINC] [-r REALM]\n");
+    sb.append("\t[-j JAAS_FILE]\n");
+    sb.append("\t[-user LDAP_UID] [-pass LDAP_PASSWD]\n");
+    sb.append("\t[-St SSL_TRUSTSTORE] [-Sp SSL_TRUSTSTORE_PASS]\n");
+    sb.append("\t[-debug]\n");
+    System.err.printf(sb.toString());
     System.exit(exit);
   }
 
@@ -116,6 +129,12 @@ public class ImpalaJdbcClient extends JdbcClient {
         properties.setProperty("ssltruststorepassword", getNextArg(args, "-Sp", ++i));
       } else if (arg.equals("-d")) {
         properties.setProperty("db", getNextArg(args, "-d", ++i));
+      } else if (arg.equals("-user")) {
+        properties.setProperty("username", getNextArg(args, "-user", ++i));
+      } else if (arg.equals("-pass")) {
+        properties.setProperty("password", getNextArg(args, "-pass", ++i));
+      } else if (arg.equals("-debug")) {
+        properties.setProperty("debug", "true");
       }
     }
 
@@ -126,6 +145,16 @@ public class ImpalaJdbcClient extends JdbcClient {
     if (properties.getProperty("host") == null) {
       exitWithUsage("Server hostname cannot be null", -1);
     }
+
+    ConsoleAppender console = new ConsoleAppender();
+    console.setLayout(new PatternLayout("%d [%p] %m%n"));
+    if (Boolean.parseBoolean(properties.getProperty("debug"))) {
+      console.setThreshold(Level.DEBUG);
+    } else {
+      console.setThreshold(Level.INFO);
+    }
+    console.activateOptions();
+    Logger.getRootLogger().addAppender(console);
 
     ImpalaJdbcClient client = new ImpalaJdbcClient(properties);
     client.run();

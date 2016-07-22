@@ -12,9 +12,10 @@ public class ApacheHiveDriver implements JdbcDriver {
   }
 
   @Override
-  public String constructJdbcUrl(String host, int port, String serverPrincipal,
-                                 String kerberosRealm, String sslTrustStore,
-                                 String sslTrustStorePassword) {
+  public String constructJdbcUrl(String host, int port,
+    String serverPrincipal, String kerberosRealm,
+    String username, String password,
+    String sslTrustStore, String sslTrustStorePassword) {
     // Better error detection for production
     String url = String.format("jdbc:hive2://%s:%d/default", host, port);
     if (serverPrincipal != null) {
@@ -23,6 +24,7 @@ public class ApacheHiveDriver implements JdbcDriver {
     if (sslTrustStore != null) {
       throw new RuntimeException("SSL not supported on the Apache JDBC driver at this time");
     }
+    //TODO add LDAP authmech
     return url;
   }
 

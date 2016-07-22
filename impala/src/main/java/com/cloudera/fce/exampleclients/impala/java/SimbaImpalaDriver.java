@@ -1,12 +1,15 @@
 package com.cloudera.fce.exampleclients.impala.java;
 
 import com.cloudera.fce.exampleclients.common.JdbcDriver;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.*;
 import java.util.UUID;
 
 public class SimbaImpalaDriver implements JdbcDriver {
 
+  private static final Logger LOG = LoggerFactory.getLogger(SimbaImpalaDriver.class);
   private String jaasFile = null;
 
   @Override
@@ -15,21 +18,27 @@ public class SimbaImpalaDriver implements JdbcDriver {
   }
 
   @Override
-  public String constructJdbcUrl(String host, int port, String serverPrincipal,
-                                 String kerberosRealm, String sslTrustStore,
-                                 String sslTrustStorePassword) {
+  public String constructJdbcUrl(String host, int port,
+    String serverPrincipal, String kerberosRealm,
+    String username, String password,
+    String sslTrustStore, String sslTrustStorePassword) {
+
     // Better error detection for production
     String url = String.format("jdbc:impala://%s:%d", host, port);
-    if (serverPrincipal == null) {
-      url += ";AuthMech=0";
-    } else {
+    if (username != null && password != null) {
+      url += String.format(";AuthMech=3;transportMode=sasl;UID=%s;PWD=%s",
+        username, password);
+    } else if (serverPrincipal != null) {
       url += String.format(";AuthMech=1;KrbRealm=%s;KrbHostFQDN=%s;KrbServiceName=%s",
         kerberosRealm, host, serverPrincipal);
+    } else {
+      url += ";AuthMech=0";
     }
     if (sslTrustStore != null) {
       url += String.format(";SSL=1;SSLTrustStore=%s;SSLTrustStorePwd=%s",
         sslTrustStore, sslTrustStorePassword);
     }
+    LOG.debug(url);
     return url;
   }
 

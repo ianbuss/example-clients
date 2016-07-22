@@ -6,26 +6,34 @@ public interface JdbcDriver {
 
   /**
    * Get the fully qualified class name of the driver so it can be loaded via reflection
+   *
    * @return
    */
   String getName();
 
   /**
    * Create the JDBC connection URL for this driver
-   * @param host  FQDN of the server host
-   * @param port  port on which to contact the server
-   * @param serverPrincipal  server Kerberos short name, e.g. "impala" or "hive"
-   * @param kerberosRealm  Kerberos realm of the server
-   * @param sslTrustStore  file location of the trust store containing the CA or server public cert (in JKS format)
-   * @param sslTrustStorePassword  password for the truststore
+   *
+   * @param host                  FQDN of the server host
+   * @param port                  port on which to contact the server
+   * @param serverPrincipal       server Kerberos short name, e.g. "impala" or "hive"
+   * @param kerberosRealm         Kerberos realm of the server
+   * @param username              LDAP username
+   * @param password              LDAP password
+   * @param sslTrustStore         file location of the trust store containing the CA or server public cert (in JKS
+   *                              format)
+   * @param sslTrustStorePassword password for the truststore
    * @return
    */
-  String constructJdbcUrl(String host, int port, String serverPrincipal, String kerberosRealm,
-                          String sslTrustStore, String sslTrustStorePassword);
+  String constructJdbcUrl(String host, int port,
+    String serverPrincipal, String kerberosRealm,
+    String username, String password,
+    String sslTrustStore, String sslTrustStorePassword);
 
   /**
    * Configure the session to use a specified JAAS configuration file
-   * @param configFile  file location of the JAAS configuration file
+   *
+   * @param configFile file location of the JAAS configuration file
    */
   void loginViaJaas(String configFile);
 
@@ -45,10 +53,11 @@ public interface JdbcDriver {
    *   ktutil: q
    *   }
    * </pre>
-   * @param userPrinc  Kerberos principal of the connecting user. If using the default Kerberos realm, the short name
+   *
+   * @param userPrinc Kerberos principal of the connecting user. If using the default Kerberos realm, the short name
    *                  should suffice. E.g. "ian" or "ian@REALM".
-   * @param keyTab  file location of the user's keytab. If authenticating against AD ensure it has entries with
-   *               the appropriate configured encryption types.
+   * @param keyTab    file location of the user's keytab. If authenticating against AD ensure it has entries with
+   *                  the appropriate configured encryption types.
    * @throws IOException
    */
   void loginViaKeytab(String userPrinc, String keyTab) throws IOException;
