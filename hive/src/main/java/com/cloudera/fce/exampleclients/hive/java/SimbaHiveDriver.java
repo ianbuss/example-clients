@@ -15,9 +15,10 @@ public class SimbaHiveDriver implements JdbcDriver {
   }
 
   @Override
-  public String constructJdbcUrl(String host, int port, String serverPrincipal,
-                                 String kerberosRealm, String sslTrustStore,
-                                 String sslTrustStorePassword) {
+  public String constructJdbcUrl(String host, int port,
+    String serverPrincipal, String kerberosRealm,
+    String username, String password,
+    String sslTrustStore, String sslTrustStorePassword) {
     // Better error detection for production
     String url = String.format("jdbc:hive2://%s:%d", host, port);
     if (serverPrincipal == null) {
@@ -30,6 +31,7 @@ public class SimbaHiveDriver implements JdbcDriver {
       url += String.format(";SSL=1;SSLTrustStore=%s;SSLTrustStorePwd=%s",
         sslTrustStore, sslTrustStorePassword);
     }
+    //TODO add LDAP authmech
     return url;
   }
 

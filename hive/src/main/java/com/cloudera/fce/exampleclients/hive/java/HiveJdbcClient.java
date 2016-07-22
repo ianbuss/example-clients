@@ -35,6 +35,8 @@ public class HiveJdbcClient extends JdbcClient {
       Integer.parseInt(properties.getProperty("port")),
       properties.getProperty("serverprinc", null),
       properties.getProperty("realm",  null),
+      properties.getProperty("username",  null),
+      properties.getProperty("password",  null),
       properties.getProperty("ssltruststore",  null),
       properties.getProperty("ssltruststorepassword",  null));
 
