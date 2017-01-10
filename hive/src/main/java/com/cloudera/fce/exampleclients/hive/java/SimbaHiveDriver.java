@@ -9,7 +9,6 @@ public class SimbaHiveDriver implements JdbcDriver {
 
   private String jaasFile = null;
 
-  @Override
   public String getName() {
     return "com.cloudera.hive.jdbc41.HS2Driver";
   }

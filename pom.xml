@@ -73,13 +73,22 @@
     </profile>
     <profile>
       <id>cdh552</id>
-      <activation>
-        <activeByDefault>true</activeByDefault>
-      </activation>
       <properties>
         <spark.version>1.6.0-cdh5.5.2</spark.version>
         <hbase.version>1.0.0-cdh5.5.2</hbase.version>
         <hadoop.version>2.6.0-cdh5.5.2</hadoop.version>
+        <solr.version>4.10.3</solr.version>
+      </properties>
+    </profile>
+    <profile>
+      <id>cdh570</id>
+      <activation>
+        <activeByDefault>true</activeByDefault>
+      </activation>
+      <properties>
+        <spark.version>1.6.0-cdh5.7.0</spark.version>
+        <hbase.version>1.2.0-cdh5.7.0</hbase.version>
+        <hadoop.version>2.6.0-cdh5.7.0</hadoop.version>
         <solr.version>4.10.3</solr.version>
       </properties>
     </profile>
