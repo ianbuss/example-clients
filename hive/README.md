@@ -1,4 +1,4 @@
-# Example Impala clients
+# Example Hive clients
 
 Simple example Hive clients showing how to access secure Hive programmatically via JDBC/ODBC.
 
