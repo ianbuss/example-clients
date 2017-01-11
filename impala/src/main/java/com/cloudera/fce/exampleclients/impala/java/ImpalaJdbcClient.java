@@ -2,15 +2,13 @@ package com.cloudera.fce.exampleclients.impala.java;
 
 import com.cloudera.fce.exampleclients.common.JdbcClient;
 import com.cloudera.fce.exampleclients.common.JdbcDriver;
-import org.apache.log4j.ConsoleAppender;
-import org.apache.log4j.Level;
-import org.apache.log4j.Logger;
-import org.apache.log4j.PatternLayout;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.Properties;
 
 public class ImpalaJdbcClient extends JdbcClient {
-
+  private static final Logger LOG = LoggerFactory.getLogger(ImpalaJdbcClient.class);
   private static final int DEFAULT_HS2_PORT = 21050;
   private static final String DEFAULT_HS2_PRINCIPAL = "impala";
 
@@ -37,6 +35,7 @@ public class ImpalaJdbcClient extends JdbcClient {
       properties.getProperty("password", null),
       properties.getProperty("ssltruststore", null),
       properties.getProperty("ssltruststorepassword", null));
+    LOG.debug("URL: %s", url);
 
     // Set up security
     boolean secure = Boolean.parseBoolean(properties.getProperty("secure"));
@@ -146,18 +145,9 @@ public class ImpalaJdbcClient extends JdbcClient {
       exitWithUsage("Server hostname cannot be null", -1);
     }
 
-    ConsoleAppender console = new ConsoleAppender();
-    console.setLayout(new PatternLayout("%d [%p] %m%n"));
-    if (Boolean.parseBoolean(properties.getProperty("debug"))) {
-      console.setThreshold(Level.DEBUG);
-    } else {
-      console.setThreshold(Level.INFO);
-    }
-    console.activateOptions();
-    Logger.getRootLogger().addAppender(console);
+    configureLogger(Boolean.parseBoolean(properties.getProperty("debug")));
 
     ImpalaJdbcClient client = new ImpalaJdbcClient(properties);
     client.run();
   }
-
 }

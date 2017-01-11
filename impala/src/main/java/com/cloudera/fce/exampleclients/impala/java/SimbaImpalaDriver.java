@@ -9,7 +9,6 @@ import java.util.UUID;
 
 public class SimbaImpalaDriver implements JdbcDriver {
 
-  private static final Logger LOG = LoggerFactory.getLogger(SimbaImpalaDriver.class);
   private String jaasFile = null;
 
   @Override
@@ -38,7 +37,6 @@ public class SimbaImpalaDriver implements JdbcDriver {
       url += String.format(";SSL=1;SSLTrustStore=%s;SSLTrustStorePwd=%s",
         sslTrustStore, sslTrustStorePassword);
     }
-    LOG.debug(url);
     return url;
   }
 

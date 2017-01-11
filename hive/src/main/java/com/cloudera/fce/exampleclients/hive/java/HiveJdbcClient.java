@@ -2,11 +2,13 @@ package com.cloudera.fce.exampleclients.hive.java;
 
 import com.cloudera.fce.exampleclients.common.JdbcClient;
 import com.cloudera.fce.exampleclients.common.JdbcDriver;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.Properties;
 
 public class HiveJdbcClient extends JdbcClient {
-
+  private static final Logger LOG = LoggerFactory.getLogger(HiveJdbcClient.class);
   private static final int DEFAULT_HS2_PORT = 10000;
   private static final String DEFAULT_HS2_PRINCIPAL = "hive";
 
@@ -18,6 +20,7 @@ public class HiveJdbcClient extends JdbcClient {
 
   public JdbcDriver loadDriver() throws ClassNotFoundException {
     String driverName = properties.getProperty("driver");
+    LOG.debug("driverName: %s", driverName.toUpperCase());
     JdbcDriver driver = new ApacheHiveDriver();
     switch(driverName.toUpperCase()) {
       case "APACHE": break;
@@ -39,6 +42,7 @@ public class HiveJdbcClient extends JdbcClient {
       properties.getProperty("password",  null),
       properties.getProperty("ssltruststore",  null),
       properties.getProperty("ssltruststorepassword",  null));
+    LOG.debug("URL: %s", url);
 
     // Set up security
     boolean secure = Boolean.parseBoolean(properties.getProperty("secure"));
@@ -78,11 +82,17 @@ public class HiveJdbcClient extends JdbcClient {
 
   private static void exitWithUsage(String msg, int exit) {
     System.err.println(msg);
-    System.err.printf(
-      "Usage: %s -h HOST -q QUERY [-db DATABASE] [-p PORT] [-s SERVER_PRINC] [-k] [-t KEYTAB] " +
-        "[-u USER_PRINC] [-d {APACHE|SIMBA}] [-r REALM] [-j JAAS_FILE] [-St SSL_TRUSTSTORE] " +
-        "[-Sp SSL_TRUSTSTORE_PASSWORD]\n",
-      HiveJdbcClient.class.getName());
+    StringBuilder sb = new StringBuilder();
+    sb.append("Usage:" + HiveJdbcClient.class.getName() + "\n");
+    sb.append("\t-h HOST\n");
+    sb.append("\t-q QUERY\n");
+    sb.append("\t[-d {APACHE|SIMBA}]\n");
+    sb.append("\t[-db DATABASE] [-p PORT]\n");
+    sb.append("\t[-s SERVER_PRINC] [-k] [-t KEYTAB] [-u USER_PRINC] [-r REALM]\n");
+    sb.append("\t[-j JAAS_FILE]\n");
+    sb.append("\t[-St SSL_TRUSTSTORE] [-Sp SSL_TRUSTSTORE_PASS]\n");
+    sb.append("\t[-debug]\n");
+    System.err.printf(sb.toString());
     System.exit(exit);
   }
 
@@ -92,7 +102,6 @@ public class HiveJdbcClient extends JdbcClient {
     properties.setProperty("port", Integer.toString(DEFAULT_HS2_PORT));
     properties.setProperty("secure", "false");
     properties.setProperty("driver", "APACHE");
-    properties.setProperty("driver", "default");
     return properties;
   }
 
@@ -128,6 +137,8 @@ public class HiveJdbcClient extends JdbcClient {
           properties.setProperty("ssltruststorepassword", getNextArg(args, "-Sp", ++i)); break;
         case "-db":
           properties.setProperty("db", getNextArg(args, "-db", ++i)); break;
+        case "-debug":
+          properties.setProperty("debug", "true"); break;
         default:
           exitWithUsage("Unrecognised option: " + arg, -1);
       }
@@ -140,6 +151,8 @@ public class HiveJdbcClient extends JdbcClient {
     if (properties.getProperty("host") == null) {
       exitWithUsage("Server hostname cannot be null", -1);
     }
+
+    configureLogger(Boolean.parseBoolean(properties.getProperty("debug")));
 
     HiveJdbcClient client = new HiveJdbcClient(properties);
     client.run();
