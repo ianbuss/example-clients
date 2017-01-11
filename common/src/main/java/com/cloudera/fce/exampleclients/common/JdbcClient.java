@@ -1,5 +1,10 @@
 package com.cloudera.fce.exampleclients.common;
 
+import org.apache.log4j.ConsoleAppender;
+import org.apache.log4j.Level;
+import org.apache.log4j.LogManager;
+import org.apache.log4j.PatternLayout;
+
 import java.sql.*;
 
 public abstract class JdbcClient {
@@ -14,6 +19,17 @@ public abstract class JdbcClient {
     if (null != conn) {
       conn.close();
     }
+  }
+
+  public static void configureLogger(Boolean debug) {
+    ConsoleAppender console = new ConsoleAppender();
+    console.setLayout(new PatternLayout("%d [%p] %m%n"));
+    console.setThreshold(Level.INFO);
+    if (debug) {
+      console.setThreshold(Level.DEBUG);
+    }
+    console.activateOptions();
+    LogManager.getRootLogger().addAppender(console);
   }
 
   /**
