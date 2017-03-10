@@ -27,16 +27,28 @@ public class ImpalaJdbcClient extends JdbcClient {
   }
 
   public void run() throws Exception {
-    JdbcDriver driver = loadDriver();
-    String url = driver.constructJdbcUrl(
-      properties.getProperty("host"),
-      Integer.parseInt(properties.getProperty("port")),
-      properties.getProperty("serverprinc", null),
-      properties.getProperty("realm", null),
-      properties.getProperty("username", null),
-      properties.getProperty("password", null),
-      properties.getProperty("ssltruststore", null),
-      properties.getProperty("ssltruststorepassword", null));
+    JdbcDriver driver = loadDriver().
+        withHostPort(properties.getProperty("host"),
+            Integer.parseInt(properties.getProperty("port")));
+
+    if (properties.getProperty("serverprinc") != null) {
+      driver = driver.withKerberos(properties.getProperty("serverprinc"),
+          properties.getProperty("realm"));
+    } else if (properties.getProperty("username") != null) {
+      driver = driver.withLDAP(properties.getProperty("username"),
+          properties.getProperty("password"));
+    }
+
+    if (properties.getProperty("ssltruststore") != null) {
+      driver = driver.withSSL(properties.getProperty("ssltruststore"),
+          properties.getProperty("ssltruststorepassword"));
+    }
+
+    if (properties.getProperty("doas") != null) {
+      driver = driver.withImpersonation(properties.getProperty("doas"));
+    }
+
+    String url = driver.constructJdbcUrl();
 
     // Set up security
     boolean secure = Boolean.parseBoolean(properties.getProperty("secure"));
@@ -86,6 +98,7 @@ public class ImpalaJdbcClient extends JdbcClient {
     sb.append("\t[-user LDAP_UID] [-pass LDAP_PASSWD]\n");
     sb.append("\t[-St SSL_TRUSTSTORE] [-Sp SSL_TRUSTSTORE_PASS]\n");
     sb.append("\t[-debug]\n");
+    sb.append("\t[-doas]\n");
     System.err.printf(sb.toString());
     System.exit(exit);
   }
@@ -135,6 +148,8 @@ public class ImpalaJdbcClient extends JdbcClient {
         properties.setProperty("password", getNextArg(args, "-pass", ++i));
       } else if (arg.equals("-debug")) {
         properties.setProperty("debug", "true");
+      } else if (arg.equals("-doas")) {
+        properties.setProperty("doas", getNextArg(args, "-doas", ++i));
       }
     }
 
@@ -149,7 +164,7 @@ public class ImpalaJdbcClient extends JdbcClient {
     ConsoleAppender console = new ConsoleAppender();
     console.setLayout(new PatternLayout("%d [%p] %m%n"));
     if (Boolean.parseBoolean(properties.getProperty("debug"))) {
-      console.setThreshold(Level.DEBUG);
+      console.setThreshold(Level.TRACE);
     } else {
       console.setThreshold(Level.INFO);
     }

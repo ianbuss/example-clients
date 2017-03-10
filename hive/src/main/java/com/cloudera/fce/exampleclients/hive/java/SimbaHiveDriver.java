@@ -1,11 +1,16 @@
 package com.cloudera.fce.exampleclients.hive.java;
 
+import com.cloudera.fce.exampleclients.common.AbstractJdbcDriver;
 import com.cloudera.fce.exampleclients.common.JdbcDriver;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.*;
 import java.util.UUID;
 
-public class SimbaHiveDriver implements JdbcDriver {
+public class SimbaHiveDriver extends AbstractJdbcDriver {
+
+  private static final Logger LOG = LoggerFactory.getLogger(SimbaHiveDriver.class);
 
   private String jaasFile = null;
 
@@ -14,24 +19,33 @@ public class SimbaHiveDriver implements JdbcDriver {
   }
 
   @Override
-  public String constructJdbcUrl(String host, int port,
-    String serverPrincipal, String kerberosRealm,
-    String username, String password,
-    String sslTrustStore, String sslTrustStorePassword) {
+  public String constructJdbcUrl() {
     // Better error detection for production
-    String url = String.format("jdbc:hive2://%s:%d", host, port);
-    if (serverPrincipal == null) {
-      url += ";AuthMech=0";
-    } else {
+    String url = String.format("jdbc:hive://%s:%d", host, port);
+    if (isLDAP) {
+      url += String.format(";AuthMech=3;transportMode=sasl;UID=%s;PWD=%s",
+          userName, password);
+    } else if (isKerberos) {
       url += String.format(";AuthMech=1;KrbRealm=%s;KrbHostFQDN=%s;KrbServiceName=%s",
-        kerberosRealm, host, serverPrincipal);
+          krbRealm, host, serverPrinc);
+    } else {
+      // No auth
+      url += ";AuthMech=0";
     }
-    if (sslTrustStore != null) {
+    if (isSSL) {
       url += String.format(";SSL=1;SSLTrustStore=%s;SSLTrustStorePwd=%s",
-        sslTrustStore, sslTrustStorePassword);
+          trustStore, trustStorePassword);
     }
-    //TODO add LDAP authmech
+    if (doAsUser != null) {
+      url += String.format(";DelegationUID=%s", doAsUser);
+    }
+    LOG.debug(url);
     return url;
+  }
+
+  @Override
+  public JdbcDriver withImpersonation(String doAsUser) {
+    throw new UnsupportedOperationException();
   }
 
   @Override

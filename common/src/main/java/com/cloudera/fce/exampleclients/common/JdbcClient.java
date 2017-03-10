@@ -22,7 +22,7 @@ public abstract class JdbcClient {
    * @throws SQLException
    */
   public void runQuery(String query) throws SQLException {
-    runQuery(query, "db");
+    runQuery(query, "default");
   }
 
   /**

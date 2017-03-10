@@ -1,13 +1,13 @@
 package com.cloudera.fce.exampleclients.impala.java;
 
-import com.cloudera.fce.exampleclients.common.JdbcDriver;
+import com.cloudera.fce.exampleclients.common.AbstractJdbcDriver;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.*;
 import java.util.UUID;
 
-public class SimbaImpalaDriver implements JdbcDriver {
+public class SimbaImpalaDriver extends AbstractJdbcDriver {
 
   private static final Logger LOG = LoggerFactory.getLogger(SimbaImpalaDriver.class);
   private String jaasFile = null;
@@ -18,25 +18,25 @@ public class SimbaImpalaDriver implements JdbcDriver {
   }
 
   @Override
-  public String constructJdbcUrl(String host, int port,
-    String serverPrincipal, String kerberosRealm,
-    String username, String password,
-    String sslTrustStore, String sslTrustStorePassword) {
-
+  public String constructJdbcUrl() {
     // Better error detection for production
     String url = String.format("jdbc:impala://%s:%d", host, port);
-    if (username != null && password != null) {
+    if (isLDAP) {
       url += String.format(";AuthMech=3;transportMode=sasl;UID=%s;PWD=%s",
-        username, password);
-    } else if (serverPrincipal != null) {
+        userName, password);
+    } else if (isKerberos) {
       url += String.format(";AuthMech=1;KrbRealm=%s;KrbHostFQDN=%s;KrbServiceName=%s",
-        kerberosRealm, host, serverPrincipal);
+        krbRealm, host, serverPrinc);
     } else {
+      // No auth
       url += ";AuthMech=0";
     }
-    if (sslTrustStore != null) {
+    if (isSSL) {
       url += String.format(";SSL=1;SSLTrustStore=%s;SSLTrustStorePwd=%s",
-        sslTrustStore, sslTrustStorePassword);
+        trustStore, trustStorePassword);
+    }
+    if (doAsUser != null) {
+      url += String.format(";DelegationUID=%s", doAsUser);
     }
     LOG.debug(url);
     return url;
@@ -56,9 +56,9 @@ public class SimbaImpalaDriver implements JdbcDriver {
     out.write("Client {\n");
     out.write(" com.sun.security.auth.module.Krb5LoginModule required\n");
     out.write(" useKeyTab=true\n");
-    out.write(" keyTab=" + keyTab + "\n");
+    out.write(" keyTab=\"" + keyTab + "\"\n");
     out.write(" doNotPrompt=true\n");
-    out.write(" principal=" + userPrinc + ";\n");
+    out.write(" principal=\"" + userPrinc + "\";\n");
     out.write("};\n");
     out.close();
     loginViaJaas(jaasFile);

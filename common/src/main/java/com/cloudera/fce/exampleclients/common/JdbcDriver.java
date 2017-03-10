@@ -13,22 +13,55 @@ public interface JdbcDriver {
 
   /**
    * Create the JDBC connection URL for this driver
-   *
-   * @param host                  FQDN of the server host
-   * @param port                  port on which to contact the server
-   * @param serverPrincipal       server Kerberos short name, e.g. "impala" or "hive"
-   * @param kerberosRealm         Kerberos realm of the server
-   * @param username              LDAP username
-   * @param password              LDAP password
-   * @param sslTrustStore         file location of the trust store containing the CA or server public cert (in JKS
-   *                              format)
-   * @param sslTrustStorePassword password for the truststore
    * @return
    */
-  String constructJdbcUrl(String host, int port,
-    String serverPrincipal, String kerberosRealm,
-    String username, String password,
-    String sslTrustStore, String sslTrustStorePassword);
+  String constructJdbcUrl();
+
+  /**
+   * Specify the host and port of the server
+   * @param host                  FQDN of the server host
+   * @param port                  port on which to contact the server
+   * @return
+   */
+  JdbcDriver withHostPort(String host, int port);
+
+  /**
+   * Specify the database to connect to. Defaults to "default".
+   * @param database
+   * @return
+   */
+  JdbcDriver withDatabase(String database);
+
+  /**
+   * Specify the Kerberos connection parameters
+   * @param serverPrincipal       server Kerberos short name, e.g. "impala" or "hive"
+   * @param kerberosRealm         Kerberos realm of the server
+   * @return
+   */
+  JdbcDriver withKerberos(String serverPrincipal, String kerberosRealm);
+
+  /**
+   * Specify LDAP connection parameters
+   * @param user
+   * @param pass
+   * @return
+   */
+  JdbcDriver withLDAP(String user, String pass);
+
+  /**
+   * Specify SSL connection parameters
+   * @param trustStore
+   * @param trustStorePassword
+   * @return
+   */
+  JdbcDriver withSSL(String trustStore, String trustStorePassword);
+
+  /**
+   * Define the delegation user (impersonation)
+   * @param doAsUser
+   * @return
+   */
+  JdbcDriver withImpersonation(String doAsUser);
 
   /**
    * Configure the session to use a specified JAAS configuration file
